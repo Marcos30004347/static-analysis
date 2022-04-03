@@ -3,32 +3,264 @@
 #+DATE: 12-03-2022
 #+LATEX_HEADER: \usepackage{flowchart}
 #+LATEX_HEADER: \usepackage{tikz}
-#+LATEX_HEADER: \usetikzlibrary{arrows, shapes}
+#+LATEX_HEADER: \usetikzlibrary{arrows, shapes, positioning}
+#+LATEX_HEADER: \usepackage[clean]{svg}
 
-*** Question 1:
-#+RESULTS: hello-world
+* Question
 
-\begin{document}
-\begin{tikzpicture}[>=stealth, thick]
+\begin{tikzpicture}[thicik]
 
-\node (A) at (0,0) [draw, process, align=flush center] 
-{First block content};
+\node[draw,
+		align=flush center,
+		minimum width=1cm,
+		minimum height=1cm] at (0,0) (block1) {1 \\ ... \\ 13};
 
-\node (B) at (0,-2) [draw, double, double distance=1pt, process, align=flush center] 
-{Second block content};
+\node[draw,
+		below left =of block1,
+		align=flush center,
+		minimum width=1cm, 
+		minimum height=1cm] (block2) {14 \\ ... \\ 15};
 
-\node (C) at (-3,-4) [draw, process, align=flush center] 
-{Third block content};
+\node[draw,
+		below right =of block1,
+		align=flush center,
+		minimum width=1cm, 
+		minimum height=1cm] (block3) {39 \\ ... \\ 39};
 
-\node (D) at (3,-4) [draw, process, align=flush center] 
-{Fourth block content};
+\node[draw,
+		below =of block2,
+		align=flush center,
+		minimum width=1cm, 
+		minimum height=1cm] (block4) {16 \\ ... \\ 19};
 
-\coordinate (z) at (0,-3);
+\node[draw,
+		below left =of block4,
+		align=flush center,
+		minimum width=1cm, 
+		minimum height=1cm] (block5) {20 \\ ... \\ 30};
 
-\draw[->] (A) -- (B);
-\draw[->] (B) -- (z) -| node[above] {NO} (C);
-\draw[->] (B) -- (z) -| node[above] {YES} (D);
+\node[draw,
+		below right =of block3,
+		align=flush center,
+		minimum width=1cm, 
+		minimum height=1cm] (block6) {40 \\ ... \\ 43};
+
+\node[draw,
+		below right =of block5,
+		align=flush center,
+		minimum width=1cm, 
+		minimum height=1cm] (block7) {31 \\ ... \\ 34};
+
+
+\node[draw,
+		above left =of block5,
+		align=flush center,
+		minimum width=1cm, 
+		minimum height=1cm] (block8) {35 \\ ... \\ 38};
+
+\draw[-latex] (block1) -| (block2)
+							node[pos=0.25, fill=white, inner sep=0]{YES};
+
+\draw[-latex] (block1) -| (block3)
+							node[pos=0.25, fill=white, inner sep=0]{NO};
+
+\draw[-latex] (block2) edge (block4);
+
+\draw[-latex] (block3) -| (block6);
+
+\draw[-latex] (block4) -| (block5)
+							node[pos=0.25, fill=white, inner sep=0]{YES};
+
+\draw[-latex] (block4) -| (block3)
+							node[pos=0.25, fill=white, inner sep=0]{NO};
+
+\draw[-latex] (block5) -| (block7)
+							node[pos=0.25, fill=white, inner sep=0]{YES};
+
+\draw[-latex] (block5) -| (block8)
+							node[pos=0.25, fill=white, inner sep=0]{NO};
+
+\draw[-latex] (block8) |- (block2);
+
+\draw[-latex] (block7) -| (block8);
 
 \end{tikzpicture}
-\end{document}
 
+* Question
+
+*****  (a) Lets define a hash function h that produce a unique number for each input sequence, then we have that the value numbering give us:
+
+h(i) \leftarrow h(1) = 1
+
+h(j) \leftarrow h(+, h(1), h(i)) = 2
+
+h(k) \leftarrow h(i) = 1
+
+h(l) \leftarrow h(+, h(k), h(1)) = 2
+
+from that we can see that the expressions assigned to $l$ and $k$ where already computed at the time of the assignments, we also kwnow that $k$ and $i$ are equivalent nodes of hash 1, both $j$ and $l$ can be output nodes, and are equivalent with hash 2, if we take a unique node for each intermediate computation, and keep a uniquer node for each possible output node we end up with:
+
+\begin{tikzpicture}[thicik]
+
+\node[draw,
+		align=flush center,
+		fill=white,
+		shape=circle,
+		minimum width=1cm,
+		minimum height=1cm] at (0,0) (block1) {1, 1};
+
+\node[draw,
+		align=flush center,
+		below right =of block1,
+		fill=white,
+		shape=circle,
+		minimum width=1cm,
+		minimum height=1cm] (block2) {2, (+, j)};
+
+\node[draw,
+		align=flush center,
+		below left =of block1,
+		fill=white,
+		shape=circle,
+		minimum width=1cm,
+		minimum height=1cm] (block3) {2, (+, k)};
+
+
+\draw[-latex] (block1) |- (block2);
+\draw[-latex] (block1) -| (block2);
+\draw[-latex] (block1) -- (block3);
+\draw[-latex] (block1) -| (block3);
+
+\end{tikzpicture}
+
+
+by doing constant propagation on i we have:
+
+j = 1 + 1
+
+k = 1
+
+l = k + 1
+
+by doing contant propagation again for k we end up with:
+
+j = 1 + 1
+
+l = 1 + 1
+
+The above code have the following DAG:
+
+\begin{tikzpicture}[thicik]
+
+\node[draw,
+		align=flush center,
+		fill=white,
+		shape=circle,
+		minimum width=1cm,
+		minimum height=1cm] at (0,0) (block1) {1, 1};
+
+\node[draw,
+		align=flush center,
+		below right =of block1,
+		fill=white,
+		shape=circle,
+		minimum width=1cm,
+		minimum height=1cm] (block2) {2, (+, j)};
+
+\node[draw,
+		align=flush center,
+		below left =of block1,
+		fill=white,
+		shape=circle,
+		minimum width=1cm,
+		minimum height=1cm] (block3) {2, (+, k)};
+
+
+\draw[-latex] (block1) |- (block2);
+\draw[-latex] (block1) -| (block2);
+\draw[-latex] (block1) -- (block3);
+\draw[-latex] (block1) -| (block3);
+
+\end{tikzpicture}
+ 
+That is a DAG equivalent to the value numbering aproach.
+
+*****  (b) Lets define a hash function h that produce a unique number for each input sequence, then we have that the value numbering give us:
+
+h(i) \leftarrow h(read()) = 1
+
+h(j) \leftarrow h(+, h(i), 1) = 2
+
+h(k) \leftarrow h(i) = 1
+
+h(l) \leftarrow h(+, h(k), h(1)) = 2
+
+This will give us the same DAG presented in the previous question, but taking constant propagation we cant perform any kind of otimizations sinse $i$ is not a constant in this particular case.
+
+***** (c) I'm going to present the value-numbering throught the Value-Number-Table as exemplified on the slides. Constructing the DAG from the table is trivial by just following the DAG construction algorithm presented in the slides and using the table to get a unique number for each (in, _) nodes and for each equivalent nodes, equivalent nodes are nodes  with the same operator and with the same sequence of operands. The nodes associated with a '+' have their operands sorted in accending order sinse the order of the operands does not matter for the addition operation.
+
+Value-Number-Table:
+
+1 (1) \rightarrow (in, _)
+
+2 (i) \rightarrow (in, _)
+
+3 (j) \rightarrow (in, _)
+
+4 (L1) \rightarrow (in, _)
+
+5 (a = i + 1) \rightarrow (+, 1, 2)
+
+6 (b = 1 + i) \rightarrow (+, 1, 2)
+
+7 (i = j) \rightarrow (3)
+
+8 (i + 1) \rightarrow (+, 3, 1)
+
+9 (if i + 1 goto L1) \rightarrow (if, 8, 4)
+
+10 (c = i + 1) \rightarrow (+, 3, 1)
+
+
+***** Using the same creteriums as in the previous question:
+
+Value-Number-Table
+
+1 (x) \rightarrow (in, _)
+
+2 (y) \rightarrow (in, _)
+
+3 (z) \rightarrow (in, _)
+
+4 (L1) \rightarrow (in, _)
+
+5 (L2) \rightarrow (in, _)
+
+6 (a = x v y) \rightarrow (v, 1, 2)
+
+7 (b = x v y) \rightarrow (v, 1, 2)
+
+8 (t1 = !z) \rightarrow (!, 3)
+
+9 (if t1 foto L1) \rightarrow (if, 8, 4)
+
+10 (x = !z) \rightarrow (!, 3)
+
+11 (c = x & y) \rightarrow (&, 1, 2)
+
+12 (if c foto L2) \rightarrow (if, 11, 5)
+
+13 (d = x & y) \rightarrow (&, 1, 2)
+
+		
+* Question
+***** (a)
+\includegraphics[scale=0.65]{list2-3a.png}
+
+***** (b) The bin-packing problem can be defined as an optimization problem, in which items of different weights must be packed into a finite number of binds in a way that minimizes the number of bins used. If we have an algorithm that solves the bin-packing problem, we can interpret a bin as being a register and a variable as being an item with weight equal to the number of instructions that the variable should be keped alive, that meaning the count of instruction between the assignment of the variable and the last instruction that the variable is used, then we can use the algorithm that solves the bin-packing problem for those items, the solution returned by the algorithm correspond to the optimal solution to the register allocation problem with minimum use of registers by the definition of the bin-packing problem.
+
+***** (c) If we have an unbounded number of registers, we can always store the value of a particular variable on a register whithout ever running out of register to use. In other situations with a enought number of registers, we may store a variable into a register if we know that the variable currently stored at that register will never be used again, that last condition can be inferred locally, what may not be the case for the global register allocation problem, sinse we only know the lifetime of a variable at the scope of a local block. This is the intuition behind why register allocation has an optimal solution at the local case, but not at the global case.
+
+* Question
+
+\includegraphics[scale=0.65]{list2-4.png}

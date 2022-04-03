@@ -1,10 +1,16 @@
-#+TITLE: Static Analysis: List 1
+#+TITLE: Static Analysis: List 2
 #+AUTHOR: Marcos Vinicius Moreira Santos 
 #+DATE: 12-03-2022
 #+LATEX_HEADER: \usepackage{flowchart}
 #+LATEX_HEADER: \usepackage{tikz}
 #+LATEX_HEADER: \usetikzlibrary{arrows, shapes, positioning}
 #+LATEX_HEADER: \usepackage[clean]{svg}
+#+OPTIONS: toc:nil        (no default TOC at all)
+
+#+BEGIN_abstract
+This document contain my awnsers for the questions at https://homepages.dcc.ufmg.br/~fernando/classes/dcc888/ementa/hw/ControlFlowGraphs.pdf for the Static Analysis course at UFMG.
+#+END_abstract
+
 
 * Question
 

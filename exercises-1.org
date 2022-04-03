@@ -1,5 +1,6 @@
 #+TITLE: Static Analysis: List 1
 #+AUTHOR: Marcos Vinicius Moreira Santos 
+#+OPTIONS: toc:nil        (no default TOC at all)
 
 #+BEGIN_abstract
 This document contain my awnsers for the questions at https://homepages.dcc.ufmg.br/~fernando/classes/dcc888/ementa/hw/Introduction.pdf for the Static Analysis course at UFMG.
@@ -22,7 +23,7 @@ This document contain my awnsers for the questions at https://homepages.dcc.ufmg
 
 ***** From the type level information and the use case it is possible to verify such inconsistencies. For instance, considering the possibilities of terms that a $char$ type have and the combinations that can result in a wrapping-arithmetic throught Range Analysis it is possible to detect such kind of bug. One aproach to to remove such a bug, that bug being caused by overflow, will be to avoid the overflow, this can be acomplished by taking into acount that $buf\underline{\hspace{.05in}}size < BUG\underline{\hspace{.05in}}SIZE \rightarrow w * h < BUF\underline{\hspace{.05in}}SIZE \rightarrow w < \frac{BUF\underline{\hspace{.05in}}SIZE}{h}$.
 
-*  Question
+* Question
 ***** $diff1$ stops executing just after the first mismatched character is found, so the running time depends on the inputs while $diff2$ perform always 8 assignments to the $diff$ variable before being able to return and because of that $diff2$ always take the same amount of time to run given that there is no branching on it that can cause a jump to a return statement.
 
 ***** You can use the running time of the algorithm to verify how far the current password guess is from the real one character by character, for instance, lets start with a sequence that match the password requirements like length and count of special characters for instance, we now set the current character position to zero and take the average response time from the non-isochronous algorithm for each valid password character at that position for a sufficiently big number of attempts. We then take the character with the minimum average time and place it at the current password location, we then perform the same procedure for the next password character until we reach the correct password.

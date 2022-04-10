@@ -1,0 +1,284 @@
+#+TITLE: Static Analysis: List 3
+#+AUTHOR: Marcos Vinicius Moreira Santos - 2018054982
+#+DATE: 12-03-2022
+#+LATEX_HEADER: \usepackage{flowchart}
+#+LATEX_HEADER: \usepackage{tikz}
+#+LATEX_HEADER: \usetikzlibrary{arrows, shapes, positioning}
+#+LATEX_HEADER: \usepackage[clean]{svg}
+#+LATEX_HEADER:\usepackage{setspace}
+
+#+OPTIONS: toc:nil        (no default TOC at all)
+#+OPTIONS: tex:t
+
+#+BEGIN_abstract
+This document contain my answers for the questions at https://homepages.dcc.ufmg.br/~fernando/classes/dcc888/ementa/hw/IntroDataFlow.pdf for the Static Analysis course at UFMG.
+#+END_abstract
+
+
+\doublespacing
+* Exercise 1
+ 
+lets name the nodes on the control flow graph:
+
+p_0: x = 1
+
+p_1: y = read()
+
+p_2: (y > 0)?
+
+p_3: x = 2
+
+p_4: print(x)
+
+p_5: x = x + 1
+
+p_6: y = y - 1
+
+p_7: goto
+
+
+Applying the equations $$ IN(p_i) = (OUT(p_i) \ {v}) \cup vars(E) $$ and $$ OUT(p_i) = \cup IN(p_s), p_s \in succ(p_i)$$ for nodes p_i of type v = E, and IN(p_i) = (OUT(p_i)) \cup vars(E), OUT(p_i) = \wbigcup IN(p_s) for p_s \in succ(p_i) for nodes p_i of type E we end up with:
+
+IN(p_0) = OUT(p_0) \ {x}
+
+OUT(p_0) = IN(p_1)
+
+IN(p_1) = OUT(p_1) \ {y}
+
+OUT(p_1) = IN(p_2)
+
+IN(p_2) = OUT(p_2) \cup {y}
+
+OUT(p_2) = IN(p_3) \cup IN(p_5) \cup IN(p_7)
+
+IN(p_3) = OUT(p_3) \ {x}
+
+OUT(p_3) = IN(p_4)
+
+IN(p_4) = OUT(p_4)
+
+OUT(p_4) = {}
+
+IN(p_5) = (OUT(p_5) \ {x}) \cup {x}
+
+OUT(p_5) = IN(p_6)
+
+IN(p_6) = (OUT(p_6) \ {y}) \cup {y}
+
+OUT(p_6) = IN(p_7)
+
+IN(p_7) = OUT(p_7)
+
+OUT(p_7) = IN(p_2)
+
+* Exercise 2
+ 
+A program point p: v = E have IN sets and OUT sets, the variable 'v' is dead if 'v' \notin OUT(p), what signals that that variable in not going to be used again, in fact, all variables defined before the program point p that are not in OUT(p) are dead at that point, from this observation we have:
+
+\begin{singlespace}
+$$ OUT_{quasi}(p) = IN_{quasi}(p) \cup (({v} \cup vars(E)) \ (OUT(p) \cap (vars(E) \cup {v})))$$
+$$ IN_{quasi}(p) = \cup OUT_{quasi}(p_p) \ ({v} \cup vars(E)), p_p \in pred(p)$$
+\end{singespace}
+
+
+Where OUT(p) and IN(p) are the set of alive variables right after and right before program point p. Those equations say that IN_{quasi-dead}(p) is all variables quasi-dead before p and that OUT_{quasi-dead}(p) are all variables used to compute v that are not used anymore and v itself if v is dead from that point onwards. 
+
+* Exercise 3
+
+Lets define a context that assign each variable a subset of the set {\plus, \text{-}, 0}, the context can be seen as a set of the form {a:{\plus, 0}, b:{\text{-}, 0}} for example, lets use C to denote the context, operations over sets are allowed when using only the symbol values inside other sets, for instance C\{a} removes the symbol and the assignment of variable 'a' from C. We also define a operation C[a] that returns the assigned subset of {\plus, \minus, 0} of 'a' inside C;
+
+We can then define:
+
+\singlespacing
+(a) p: a = n, n \in $N$
+
+\begin{equation}
+IN_{sign}(p) = OUT_{sign}(p) \backslash  \{ a : \{+, 0\} \}
+\end{equation}
+
+\begin{equation}
+OUT_{sign}(p) = (\cup IN_{sign}(p_s)) \cup \{ a: \{+, 0\} \}, p_s \in succ(p)
+\end{equation}
+
+(b) p: a = b
+
+\begin{equation}
+IN_{sign}(p) = OUT_{sign} \backslash \{ a : sign(b) \}
+\end{equation}
+
+\begin{equation}
+OUT_{sign}(p) = (\cup IN_{sign}(p_s)) \cup \{ a: sign(b) \}, p_s \in succ(p)
+\end{equation}
+
+(c) p: a = b - c
+
+\begin{equation}
+IN_{sign}(p) = (OUT_{sign} \backslash \{ a : sign(b - c) \}) \cup \{b: sign(b), c: sign(c)\}
+\end{equation}
+
+\begin{equation}
+OUT_{sign}(p) = (\cup IN_{sign}(p_s)) \cup { a: sign(b - c) }, p_s \in succ(p)
+\end{equation}
+
+where:
+
+\singlespacing
+sign(b - c) = switch(sign(a) and sign(b)) \\
+\indent \indent case {\plus, 0} and {\plus, 0} then {\plus, -, 0}, \\
+\indent \indent case {-, 0} and {\plus, 0} then {-, 0}, \\
+\indent \indent case {\plus, 0} and {-, 0} then {\plus, 0}, \\
+\indent \indent case {-, 0} and {-, 0} then {\plus, -, 0}, \\
+\indent \indent case none of the above {\plus, -, 0}
+
+(d) p: a = b + c
+
+\begin{equation}
+IN_{sign}(p) = OUT_{sign}(p) \ { a : sign(b + c) } \cup \{b: sign(b), c: sign(c)\}
+\end{equation}
+
+\begin{equation}
+OUT_{sign}(p) = (\cup IN_{sign}(p_s)) \cup \{ a: sign(b + c) \}, p_s \in succ(p)
+\end{equation}
+
+where:
+
+\singlespacing
+sign(b + c) = switch(sign(b) and sign(c)): \\
+\indent \indent case {\plus, 0} and {\plus, 0} then {\plus, 0}, \\
+\indent \indent case {-, 0} and {\plus, 0} then {\plus, -, 0}, \\
+\indent \indent case {\plus, 0} and {-, 0} then {\plus, -, 0}, \\
+\indent \indent case {-, 0} and {-, 0} then {-, 0}, \\
+\indent \indent case none of the above {\plus, -, 0} \\
+
+(e) a = b \times c
+
+\begin{equation}
+IN_{sign}(p) = OUT_{sign}(p) \backslash \{ a : sign(b \times c) \} \cup {b: sign(b), c: sign(c)}
+\end{equation}
+
+\begin{equation}
+OUT_{sign}(p) = (\cup IN_{sign}(p_s)) \cup \{ a: sign(b \times c) \}, p_s \in succ(p)
+\end{equation}
+
+where:
+
+\singlespacing
+sign(b \times c) = switch(sign(b) and sign(c)) \\
+\indent \indent case {\plus, 0} and {\plus, 0} then {\plus, 0}, \\
+\indent \indent case {-, 0} and {\plus, 0} then {-, 0}, \\
+\indent \indent case {\plus, 0} and {-, 0} then {-, 0}, \\
+\indent \indent case {-. 0} and {-, 0} then {\plus, 0}, \\
+\indent \indent case none of the above {+, -, 0}
+
+(f) p: if a goto L_i
+
+\begin{equation}
+IN_{sign}(p) = OUT_{sign}(p)
+\end{equation}
+
+\begin{equation}
+OUT_{sign}(p) = \cup IN_{sign}(p_s), p_s \in succ(p)
+\end{equation}
+
+(g) p: goto L_i
+
+\begin{equation}
+IN_{sign}(p) = OUT_{sign}(p)
+\end{equation}
+
+\begin{equation}
+OUT_{sign}(p) = \cup IN_{sign}(p_s), p_s \in succ(p)
+\end{equation}
+
+(h) p: print a
+
+\begin{equation}
+IN_{sign}(p) = OUT_{sign}(p)
+\end{equation}
+
+\begin{equation}
+OUT_{sign}(p) = \cup IN_{sign}(p_s), p_s \in succ(p)
+\end{equation}
+
+\doublespacing
+* Exercise 4  
+Lets define the program points as:
+
+p_0: a = 0
+
+p_1: p = a - N
+
+p_2: if p goto L_1
+
+p_3: print p
+
+p_4: b = 0
+
+p_5: a = a + b
+
+p_6: goto L_2
+
+from that we have:
+
+IN_{sign}(p_0) = {}
+
+OUT_{sign}(p_0) = { a: {\plus, 0} }
+
+IN_{sign}(p_1) = { a: {\plus, 0}, N: {\plus,\text{-}, 0} }
+
+OUT_{sign}(p_1) = {a: {\plus, 0}, p: {\plus, \text{-}, 0}}
+
+IN_{sign}(p_2) = {a: {\plus, 0}, p: {\plus, \text{-}, 0}}
+
+OUT_{sign}(p_2) = {a: {\plus, 0}, p: {\plus, \text{-}, 0}}
+
+IN_{sign}(p_3) = { p : {\plus, \text{-}, 0} }
+
+OUT_{sign}(p_3) = {}
+
+IN_{sign}(p_4) = {a: {\plus, 0}}
+
+OUT_{sign}(p_4) = {a: {\plus, 0}, b: {\plus, 0}}
+
+IN_{sign}(p_5) = {a: {\plus, 0}, b: {\plus, 0}}
+
+OUT_{sign}(p_5) = {}
+
+IN_{sign}(p_6) = {}
+
+OUT_{sign}(p_6) = {}
+
+* Exercise 5
+
+(a) Lets define the OUT and IN sets, sinse we have two programs, they can be in different labels at different times, we are goind to represent the program points then by a pair of labels, so each pair of labels inside the program can have a IN and an OUT set where those sets contain a set of pairs between labels on the program \pi_1 and \pi_2. The equations can be defined as:
+
+\singlespacing
+OUT(l_i, l_j) = \\
+	\indent \indent if (l_i: send(\pi_2, v) and l_j: v = recv(\pi_1)) then IN(l_i, l_j) \cup {(l_i, l_j)} \\
+	\indent \indent else if (l_i: v = recv(\pi_2) and l_j: send(\pi_1, v)) then IN(l_i, l_j) \cup {(l_i, l_j)}
+	\indent \indent else if (l_i: v = recv(\pi_2) and l_j: v = recv(\pi_1)) then IN(l_i, l_j) \cup {(l_i, l_j)}
+	\indent \indent else if (l_i: v = recv(\pi_2, v)) then IN(l_i, l_j) \cup IN(l_i, l_{j_s}), l_{j_s} \in succ(l_j)
+	\indent \indent else if (l_j: v = recv(\pi_1, v)) then IN(l_i, l_j) \cup IN (l_{i_s}, l_j), l_{i_s} \in succ(l_i)
+	\indent \indent else (\cup IN(l_{i_s}, l_{j_s}), l_{j_s} \in succ(l_j), l_{i_s} \in succ(l_i))
+
+\singlespacing
+IN(l_i, l_j) = \cup OUT(l_{i_s}, l_{j_s}) \backslash {(l_i, l_j)}, l_{j_s} \in succ(l_j), l_{i_s} \in succ(l_i)
+
+\doublespacing
+
+where 'if (condition) then result' just return the expression at 'result' if the program point at a given label match the condition. 
+
+The algorithm walk allong the CFG of both programs considering the labels at each iteration as the pair that should be the input for the set equations presented above, the walking is done by takind the unvisited pairs from a queue as follows:
+
+1) If we are not at the end of both programs and the current labels are $send$ and $recv$ in any order, push the successor from both labels as a pair into the queue if the pair is not yet visited and mark it as visited.
+2) If we are not at the end of both programs and the current labels are both $recv$'s, make the pair formed by their successors and push it into the queue if the pair is not yet visited and mark it as visited.
+3) If we are not at the end of both programs and the current labels are $recv$ and some other label, push all unvisited pairs formed by the label that is a $recv$ and all the successors of the other label into the queue and mark them as visited.
+4) If we are not at the end of both programs and none of the conditions above match, make the pairs of all combinations of their successors and push the unvisited pairs into the queue and mark them as visited, if some program does not have more successors, use the last node of that program.
+
+The algorith repeat the walking step until the lenght of the queue is not zero and record all the set of equations generated in the process, the algorithm also visit all the pairs that appear on the right hand side of any generated equation.
+
+(b) The algorithm starts at the pair (l_1, l_1), it always moves to some other pair of labels and never look at the same pair of labels twice, and it stops when the queue is empty, from that there is the argument that the algorithm will always terminate because there are a finite number of labels on both programs and consequently a finite amount of pairs of labels that you can form, and because the algorithm never look at the same pair of labels twice. it terminates.
+
+(c) We can generate at most |\pi_1| \times |\pi_2| IN and OUT set equations where |\pi_i| is the number of labels on program \pi_i, in the worst case, each equation uses at most $n^2$ others IN and OUT sets where $n$ is the upper bound for the number of successors that a node can have in the control flow graph($n = 2$ in the case of the assembly-like programming language of the exercise), the complexity is then O(|\pi_1| \times |\pi_2| \times n^2)
+
+(d) It can be used to catch some deadlocks, where the algorithm finds a pair of nodes where their labels are both recv's that can occurr at the same time and recv's that will never receive an answers by any send. The analysis can be used on distributed systems that comunicates over a network for example. 
